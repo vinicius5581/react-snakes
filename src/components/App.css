@@ -1,0 +1,31 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100vh;
+}
+
+.matrixWrapper{
+  flex-grow: 1;
+  width: 500px;
+  height: 500px;
+  border: 1px solid #000;
+  box-sizing: border-box;
+}
+.matrixRow{
+  display: flex;
+  justify-content: space-between;
+}
+.matrixCel{
+  height: 20px;
+  width: 20px;
+  border: 1px solid #aaa;
+  box-sizing: border-box;
+}
+
+.celWrapper{}
+
+.matrixCel.on {
+  background: black;
+}
