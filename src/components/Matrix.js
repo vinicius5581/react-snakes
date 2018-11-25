@@ -4,11 +4,12 @@ import Cel from './Cel';
 const Matrix = ({matrix}) => {
     return (
         <div className='matrixWrapper'>
-            {matrix.map((row, rIdx) => (<div className='matrixRow'>
+            {matrix.map((row, rIdx) => (<div key={`row-${rIdx}`} className='matrixRow'>
                 {row.map((col, cIdx) => {
                     return  (
                         <Cel 
-                            isOn={matrix[rIdx][cIdx]}
+                            key={`col-${cIdx}`}                            
+                            celState={matrix[rIdx][cIdx]}
                         />
                     );
                 }

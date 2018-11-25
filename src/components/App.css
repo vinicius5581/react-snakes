@@ -29,3 +29,19 @@
 .matrixCel.on {
   background: black;
 }
+
+.snakeHead {
+  background: green;
+}
+
+.snakeBody {
+  background: darkolivegreen;
+}
+
+.snakeFood {
+  background: plum;
+}
+
+.snakeSuperFood {
+  background: blueviolet;
+}

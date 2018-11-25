@@ -1,7 +1,7 @@
 import React from 'react';
 import Matrix from './Matrix';
 
-const Main = ({matrix, direction, cellOn, cellOff}) => (
+const Main = ({matrix}) => (
     <main>
         <Matrix 
             matrix={matrix}

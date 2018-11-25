@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
 import './App.css';
+import {EmptyCel, SnakeHead, SnakeBody, Food} from '../constants';
 
 const matrixDimensions = {height: 25, width: 25}
 
@@ -13,56 +13,98 @@ class App extends Component {
     this.state = {
       matrix: this.generateMatrix(matrixDimensions.height,matrixDimensions.width),
       direction: 'right',
-      speed: 1000,
-      snake: [[12,12],[11,12],[10,12],[9,12],[8,12],[7,12],[6,12]],
-      cellOff: [],
-      cellOn: []
+      speed: 100,
+      snake: [[12,12],[11,12],[10,12]],
+      hasFood: false,
+      foodPos: []
     }
   }
 
-  generateMatrix = (rows, cols) => [...new Array(rows)].map(row => [...new Array(cols)].map(col => false));
+  generateMatrix = (rows, cols) => [...new Array(rows)].map(row => [...new Array(cols)].map(col => 0));
+
+  getFood = () => {
+    if (this.state.hasFood) {
+      return this.state.foodPos;
+    } else {
+      const snake = this.state.snake;
+      const maxWidth = matrixDimensions.width;
+      const minWidth = 0;
+      const maxHeight = matrixDimensions.height;
+      const minHeight = 0;
+      let hasConflict = true;
+      let xFood;
+      let yFood;
+      while (hasConflict) {             
+        xFood = Math.floor(Math.random() * (maxWidth - minWidth + 1)) + minWidth;
+        yFood = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+        hasConflict = !!snake.filter(n => n[0] === xFood && n[1] === yFood).length;
+      }      
+      this.setState({foodPos: [xFood, yFood], hasFood: true});
+      return [xFood, yFood];
+    }
+  }
 
   updateMatrix = () => {
-    const snake = this.getSnake();
+    let snake = this.getSnake(false);
+    let food = this.getFood();
+    let isEating = false;
+
+
+    isEating = snake[0][0] === food[0] && snake[0][1] === food[1];
+
+    if (isEating) {
+      snake = this.getSnake(isEating);
+      this.setState({
+        hasFood: false,
+        foodPos: []
+      })
+    }
+
     const newMatrix = [...this.state.matrix].map((row, rIdx) => row.map((cel, cIdx) => {
       const xCel = rIdx;
       const yCel = cIdx;
-      const isOn = snake.filter(n => {
+
+      const isSnakeBody = !!snake.filter(n => {
         const xSnake = n[0];
         const ySnake = n[1];
         return xCel === xSnake && yCel === ySnake;
-      });
-      return isOn.length ? true : false;
+      }).length;
+
+      const isSnakeHead = xCel === snake[0][0] && yCel === snake[0][1];
+
+      const isFood = xCel === food[0] && yCel === food[1];      
+      
+      return isSnakeBody ? isSnakeHead ? SnakeHead.value : SnakeBody.value : isFood ? Food.value : EmptyCel.value;
     }));
+  
     this.setState({matrix: newMatrix})
   }
 
-  checkKey = e => {
+  getDirection = e => {
       const event = window.event ? window.event : e;
       const keycode = event.keyCode;
-      switch (keycode) {
-        case 38:
-          return 'up';
-        case 40:
-          return 'down';
-        case 37:
-          return 'left';
-        case 39:
-          return 'right';
+      if (keycode === 38){
+        return 'up';
+      }
+      if (keycode === 40){
+        return 'down';
+      }
+      if (keycode === 37){
+        return 'left';
+      }
+      if (keycode === 39){
+        return 'right';
       }
   }
 
   handleKeydown = event => {
-    this.setState({direction: this.checkKey(event)})
+    this.setState({direction: this.getDirection(event)})
   }
 
   componentDidMount() {
     document.body.addEventListener('keydown', this.handleKeydown);
-
     this.interval = setInterval(
-      () => {          
-          this.updateMatrix();
-      },
+      () => this.updateMatrix(),
       this.state.speed
     );
   }
@@ -73,51 +115,65 @@ class App extends Component {
     clearInterval(this.interval);
   }
 
-  speedUp = () => this.setState((previousState)=>({speed: previousState.speed - 200}));
+  speedUp = () => this.setState((previousState)=>({speed: previousState.speed - 200}), () => {
+    this.interval = setInterval(
+      () => this.updateMatrix(),
+      this.state.speed
+    );
+  });
 
-  speedDown = () => this.setState((previousState)=>({speed: previousState.speed + 200}));
+  speedDown = () => this.setState((previousState)=>({speed: previousState.speed + 200}), () => {
+    this.interval = setInterval(
+      () => this.updateMatrix(),
+      this.state.speed
+    );
+  });
 
-  getSnake = () => {
-    console.log('Get Snake');
+  getSnake = (isEating) => {
     const { direction, snake } = this.state;
     const updatedSnake = [...snake];
-    const cellOff = updatedSnake.splice(-1,1)[0];
+    if (!isEating) {
+      updatedSnake.splice(-1,1);
+    }    
     const snakeHead = snake[0];
 
     if (direction === 'up') {
-      updatedSnake.unshift([snakeHead[0] - 1,snakeHead[1]]); // up       
+      updatedSnake.unshift([snakeHead[0] - 1,snakeHead[1]]);     
     }
 
     if (direction === 'right') {
-      updatedSnake.unshift([snakeHead[0],snakeHead[1] + 1]); // right
+      updatedSnake.unshift([snakeHead[0],snakeHead[1] + 1]);
     }
 
     if (direction === 'down') {
-      updatedSnake.unshift([snakeHead[0] + 1,snakeHead[1]]); // down
+      updatedSnake.unshift([snakeHead[0] + 1,snakeHead[1]]);
     }
 
     if (direction === 'left') {      
-      updatedSnake.unshift([snakeHead[0],snakeHead[1] - 1]); // left
+      updatedSnake.unshift([snakeHead[0],snakeHead[1] - 1]);
     }
 
-    const updatedSnakeHeadX = updatedSnake[0][0];
-    const updatedSnakeHeadY = updatedSnake[0][1];
-    const cellOn = updatedSnake[0];
-    
+    const updatedSnakeHeadY = updatedSnake[0][0];
+    const updatedSnakeHeadX = updatedSnake[0][1];
+    console.log('updatedSnakeHeadX', updatedSnakeHeadX);
+    console.log(`updatedSnakeHeadX ${updatedSnakeHeadX} matrixDimensions.width ${matrixDimensions.width}`);
+    console.log(`updatedSnakeHeadY ${updatedSnakeHeadY} matrixDimensions.height ${matrixDimensions.height}`);
     // Game Over if snakeHead leaves bounderies
-    if (updatedSnakeHeadX < 0 || updatedSnakeHeadX > matrixDimensions.width || updatedSnakeHeadY < 0 || updatedSnakeHeadY > matrixDimensions.heigth) {
+    if (updatedSnakeHeadX < 0 || updatedSnakeHeadX >= matrixDimensions.width || updatedSnakeHeadY < 0 || updatedSnakeHeadY >= matrixDimensions.height) {
       console.log('Game Over - Out of bonderies');
+      this.setState({snake: snake});
       this.stop();
+      return snake;
     }
     // Game Over if sankeHead cross its own body
-    if (updatedSnake.filter((i, idx) => idx > 1 ? updatedSnakeHeadX === i[0] && updatedSnakeHeadY === i[1] : false).length) {
+    if (updatedSnake.filter((i, idx) => idx > 1 ? updatedSnakeHeadY === i[0] && updatedSnakeHeadX === i[1] : false).length) {
       console.log('Game Over - Crossing');
+      this.setState({snake: snake});
       this.stop();
+      return snake;      
     }
 
-    updatedSnake.map(i => console.log(i));
-
-    this.setState({snake: updatedSnake, cellOff, cellOn})
+    this.setState({snake: updatedSnake})
     return updatedSnake;
   }
 
@@ -131,11 +187,8 @@ class App extends Component {
       <div className="App">
        <Header />
        <Main 
-        direction={this.state.direction}
         matrix={this.state.matrix}
         snake={this.state.snake}
-        cellOn={this.state.cellOn}
-        cellOff={this.state.cellOff}
        />
        <Footer />
       </div>
