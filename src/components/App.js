@@ -4,8 +4,27 @@ import Main from './Main';
 import Footer from './Footer';
 import './App.css';
 import {EmptyCel, SnakeHead, SnakeBody, Food} from '../constants';
+import swipedetect from '../utils/swipedetect';
 
 const matrixDimensions = {height: 25, width: 25}
+
+var el = 'oi';
+swipedetect(el, function(swipedir){
+  // swipedir contains either "none", "left", "right", "top", or "down"
+  if (swipedir =='top') {
+    alert('top swipe');
+  }
+  if (swipedir =='right') {
+    alert('right swipe');
+  }
+  if (swipedir =='down') {
+    alert('down swipe');
+  }
+  if (swipedir =='left') {
+    alert('left swipe');
+  }
+});
+        
 
 class App extends Component {
   constructor(props){
